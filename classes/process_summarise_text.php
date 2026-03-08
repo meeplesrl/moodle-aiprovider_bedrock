@@ -74,39 +74,14 @@ class process_summarise_text extends abstract_processor {
             $text = "Please provide content to summarize.";
         }
 
-        // Create the base request structure with a clearer prompt.
+        // Create the request using structured content format (compatible with all Claude models).
         $promptwithinstruction = "Please summarize the following text:\n\n" . $text;
 
         $params = [
             'anthropic_version' => 'bedrock-2023-05-31',
-            'max_tokens' => 1024,
+            'max_tokens' => 2048,
             'temperature' => 0.7,
             'messages' => [
-                [
-                    'role' => 'user',
-                    'content' => $promptwithinstruction,
-                ],
-            ],
-        ];
-
-        // Add system instruction if available.
-        if (!empty($systeminstruction)) {
-            $params['system'] = $systeminstruction;
-        }
-
-        // Handle Claude 3.5 and newer models which might require specific formatting.
-        $model = $this->get_model();
-        if (strpos($model, 'anthropic.claude-3-7') !== false ||
-            strpos($model, '.anthropic.claude-3-7') !== false ||
-            strpos($model, 'anthropic.claude-3-5') !== false ||
-            strpos($model, '.anthropic.claude-3-5') !== false ||
-            strpos($model, 'anthropic.claude-3-opus') !== false ||
-            strpos($model, '.anthropic.claude-3-opus') !== false ||
-            strpos($model, 'anthropic.claude-3-sonnet') !== false ||
-            strpos($model, '.anthropic.claude-3-sonnet') !== false) {
-
-            // For newer Claude models, ensure content is properly formatted.
-            $params['messages'] = [
                 [
                     'role' => 'user',
                     'content' => [
@@ -116,7 +91,12 @@ class process_summarise_text extends abstract_processor {
                         ],
                     ],
                 ],
-            ];
+            ],
+        ];
+
+        // Add system instruction if available.
+        if (!empty($systeminstruction)) {
+            $params['system'] = $systeminstruction;
         }
 
         return $params;

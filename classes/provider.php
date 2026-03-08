@@ -172,7 +172,7 @@ class provider extends \core_ai\provider {
                 "aiprovider_bedrock/action_{$actionname}_model",
                 new \lang_string("action:{$actionname}:model", 'aiprovider_bedrock'),
                 new \lang_string("action:{$actionname}:model_desc", 'aiprovider_bedrock'),
-                'eu.anthropic.claude-sonnet-4-20250514-v1:0',
+                'eu.anthropic.claude-sonnet-4-6',
                 PARAM_TEXT,
             );
 

@@ -68,37 +68,12 @@ class process_generate_text extends abstract_processor {
             $prompttext = "Please generate text based on this prompt.";
         }
 
-        // Create the base request structure.
+        // Create the request using structured content format (compatible with all Claude models).
         $params = [
             'anthropic_version' => 'bedrock-2023-05-31',
-            'max_tokens' => 1024,
+            'max_tokens' => 2048,
             'temperature' => 0.7,
             'messages' => [
-                [
-                    'role' => 'user',
-                    'content' => $prompttext,
-                ],
-            ],
-        ];
-
-        // Add system instruction if available.
-        if (!empty($systeminstruction)) {
-            $params['system'] = $systeminstruction;
-        }
-
-        // Handle Claude 3.5 and newer models which might require specific formatting.
-        $model = $this->get_model();
-        if (strpos($model, 'anthropic.claude-3-7') !== false ||
-            strpos($model, '.anthropic.claude-3-7') !== false ||
-            strpos($model, 'anthropic.claude-3-5') !== false ||
-            strpos($model, '.anthropic.claude-3-5') !== false ||
-            strpos($model, 'anthropic.claude-3-opus') !== false ||
-            strpos($model, '.anthropic.claude-3-opus') !== false ||
-            strpos($model, 'anthropic.claude-3-sonnet') !== false ||
-            strpos($model, '.anthropic.claude-3-sonnet') !== false) {
-
-            // For newer Claude models, ensure content is properly formatted.
-            $params['messages'] = [
                 [
                     'role' => 'user',
                     'content' => [
@@ -108,7 +83,12 @@ class process_generate_text extends abstract_processor {
                         ],
                     ],
                 ],
-            ];
+            ],
+        ];
+
+        // Add system instruction if available.
+        if (!empty($systeminstruction)) {
+            $params['system'] = $systeminstruction;
         }
 
         return $params;

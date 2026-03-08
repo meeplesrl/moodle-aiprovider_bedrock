@@ -20,32 +20,45 @@ You need to provide the AWS region and the [models](https://docs.aws.amazon.com/
 
 ![main settings](https://github.com/user-attachments/assets/7de1082f-ad7d-405f-a4c7-da30d206b1fe)
 
-## Tested models with version 1.1.0
+## Tested models with version 1.2.0
 
 Amazon Bedrock [Foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) need to be enabled from Bedrock console.
 
-We tested US and EU regions that provide models in Amazon Bedrock, including the latest Anthropic Claude Sonnet 4 and Amazon Nova Canvas:
+We tested US and EU regions that provide models in Amazon Bedrock, including the latest Anthropic Claude Sonnet 4.6 and Amazon Nova Canvas:
+- eu-west-1
+    - eu.anthropic.claude-sonnet-4-6 *(default)*
+    - eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+    - eu.anthropic.claude-haiku-4-5-20251001-v1:0
+    - eu.anthropic.claude-sonnet-4-20250514-v1:0
+    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
+    - amazon.nova-canvas-v1:0 (Image)
+- eu-central-1
+    - eu.anthropic.claude-sonnet-4-6
+    - eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+    - eu.anthropic.claude-sonnet-4-20250514-v1:0
+    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
+- eu-west-3
+    - eu.anthropic.claude-sonnet-4-6
+    - eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+    - eu.anthropic.claude-sonnet-4-20250514-v1:0
+    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
 - us-east-1
+    - us.anthropic.claude-sonnet-4-6
+    - us.anthropic.claude-sonnet-4-5-20250929-v1:0
     - us.anthropic.claude-sonnet-4-20250514-v1:0
     - us.anthropic.claude-3-7-sonnet-20250219-v1:0
     - us.anthropic.claude-3-5-haiku-20241022-v1:0
     - amazon.nova-canvas-v1:0 (Image)
 - us-west-2
+    - us.anthropic.claude-sonnet-4-6
+    - us.anthropic.claude-sonnet-4-5-20250929-v1:0
     - us.anthropic.claude-sonnet-4-20250514-v1:0
     - us.anthropic.claude-3-7-sonnet-20250219-v1:0
     - anthropic.claude-3-5-haiku-20241022-v1:0
-- eu-west-1
-    - eu.anthropic.claude-sonnet-4-20250514-v1:0
-    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
-    - amazon.nova-canvas-v1:0 (Image)
-- eu-central-1
-    - eu.anthropic.claude-sonnet-4-20250514-v1:0
-    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
-- eu-west-3
-    - eu.anthropic.claude-sonnet-4-20250514-v1:0
-    - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
 
 **Note**: models starting with *us.* or *eu.* use a cross-region inference to increase throughput and improve resiliency by routing the model's requests across multiple AWS Regions during peak utilization bursts. In particular, with respect to GDPR compliance, *eu.* cross-region inference routes requests to European regions.
+
+**Note**: text generation and summarisation actions use a default `max_tokens` of **2048**. This can be raised up to 16,384 for Claude Sonnet 4.x models if longer responses are needed (requires editing the source).
 
 ## License
 
