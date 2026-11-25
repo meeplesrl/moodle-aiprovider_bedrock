@@ -131,7 +131,6 @@ abstract class abstract_processor extends process_base {
 
             $response = json_decode($result->get('body')->getContents(), true);
             return $this->handle_api_success($response);
-
         } catch (\Throwable $e) {
             $this->log_exception($e, 'Model invocation');
             return [
@@ -171,6 +170,7 @@ abstract class abstract_processor extends process_base {
             }
         }
 
+        // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
         error_log('aiprovider_bedrock: ' . $operation . ' failed: ' . json_encode($diagnostics));
     }
 
@@ -183,8 +183,8 @@ abstract class abstract_processor extends process_base {
      */
     private function get_unsupported_param_from_error(AwsException $e, array $params): ?string {
         $message = $e->getAwsErrorMessage() ?? $e->getMessage();
-        if (preg_match('/`?([a-zA-Z_]+)`? is deprecated for this model/', $message, $matches)
-                && array_key_exists($matches[1], $params)) {
+        $matched = preg_match('/\x60?([a-zA-Z_]+)\x60? is deprecated for this model/', $message, $matches);
+        if ($matched && array_key_exists($matches[1], $params)) {
             return $matches[1];
         }
         return null;
@@ -199,6 +199,7 @@ abstract class abstract_processor extends process_base {
     protected function handle_api_error(array $errorinfo): array {
         $errorcode = $errorinfo['code'] ?? 500;
         $logcode = is_scalar($errorcode) ? preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $errorcode) : 'unknown';
+        // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
         error_log('aiprovider_bedrock: API returned an error response (code ' . $logcode . ').');
 
         return [
