@@ -161,7 +161,7 @@ class process_generate_text extends abstract_processor {
             'success' => true,
             'id' => $response['id'] ?? uniqid('bedrock_'),
             'fingerprint' => $stopreason,
-            'generatedcontent' => $response['content'][0]['text'] ?? '',
+            'generatedcontent' => $this->extract_claude_text($response),
             'finishreason' => $stopreason,
             'prompttokens' => $response['usage']['input_tokens'] ?? 0,
             'completiontokens' => $response['usage']['output_tokens'] ?? 0,
