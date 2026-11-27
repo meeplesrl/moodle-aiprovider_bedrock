@@ -191,6 +191,25 @@ abstract class abstract_processor extends process_base {
     }
 
     /**
+     * Concatenate the text blocks of a Claude response.
+     *
+     * Claude can return non-text blocks (e.g. thinking) before the text block,
+     * so reading content[0] alone can drop the generated text.
+     *
+     * @param array $response The decoded Claude response.
+     * @return string The generated text, or an empty string if there is none.
+     */
+    protected function extract_claude_text(array $response): string {
+        $text = '';
+        foreach ($response['content'] ?? [] as $block) {
+            if (($block['type'] ?? '') === 'text') {
+                $text .= $block['text'] ?? '';
+            }
+        }
+        return $text;
+    }
+
+    /**
      * Handle an error from the external AI api.
      *
      * @param array $errorinfo The error information.
