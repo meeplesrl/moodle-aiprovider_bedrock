@@ -23,7 +23,7 @@
  */
 
 $string['accesskeyid'] = 'ID chiave di accesso AWS';
-$string['accesskeyid_desc'] = 'L\'ID chiave di accesso AWS utilizzato per autenticarsi con Amazon Bedrock.';
+$string['accesskeyid_desc'] = 'L\'ID chiave di accesso AWS utilizzato per autenticarsi con Amazon Bedrock. Non richiesto se "Usa la catena predefinita di provider di credenziali AWS" è abilitato sopra.';
 $string['action:generate_image:model'] = 'Modello IA';
 $string['action:generate_image:model_desc'] = 'Il modello utilizzato per generare immagini dai prompt degli utenti.';
 $string['action:generate_text:model'] = 'Modello IA';
@@ -38,7 +38,7 @@ $string['enableglobalratelimit'] = 'Imposta limite di velocità a livello di sit
 $string['enableglobalratelimit_desc'] = 'Limita il numero di richieste che il provider API Amazon Bedrock può ricevere in tutto il sito ogni ora.';
 $string['enableuserratelimit'] = 'Imposta limite di velocità utente';
 $string['enableuserratelimit_desc'] = 'Limita il numero di richieste che ogni utente può fare al provider API Amazon Bedrock ogni ora.';
-$string['error:failedprocessimage'] = 'Impossibile elaborare l\'immagine: {$a}';
+$string['error:failedprocessimage'] = 'Impossibile elaborare l\'immagine';
 $string['error:globalratelimitexceeded'] = 'Limite di velocità globale superato';
 $string['error:noimagedata'] = 'Nessuna informazione sull\'immagine trovata nella risposta';
 $string['error:unknownerror'] = 'Errore sconosciuto';
@@ -55,6 +55,8 @@ $string['privacy:metadata:aiprovider_bedrock:responseformat'] = 'Durante la gene
 $string['region'] = 'Regione AWS';
 $string['region_desc'] = 'La regione AWS dove il servizio Amazon Bedrock è disponibile (es., eu-west-1, us-east-1, us-west-2).';
 $string['secretaccesskey'] = 'Chiave di accesso segreta AWS';
-$string['secretaccesskey_desc'] = 'La chiave di accesso segreta AWS utilizzata per autenticarsi con Amazon Bedrock.';
+$string['secretaccesskey_desc'] = 'La chiave di accesso segreta AWS utilizzata per autenticarsi con Amazon Bedrock. Non richiesta se "Usa la catena predefinita di provider di credenziali AWS" è abilitato sopra.';
+$string['usedefaultcredentialchain'] = 'Usa la catena predefinita di provider di credenziali AWS';
+$string['usedefaultcredentialchain_desc'] = 'Abilita questa opzione se Moodle è in esecuzione in un ambiente AWS in cui le credenziali IAM sono disponibili automaticamente.';
 $string['userratelimit'] = 'Numero massimo di richieste per utente';
 $string['userratelimit_desc'] = 'Il numero di richieste consentite all\'ora, per utente.';

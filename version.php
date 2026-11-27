@@ -25,7 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'aiprovider_bedrock';
-$plugin->release = '1.2.0';
-$plugin->version = 2026030600;
+$plugin->release = '1.2.2';
+$plugin->version = 2026112600;
 $plugin->requires = 2024100700; // Moodle 4.5.
+$plugin->supported = [405, 503];
 $plugin->maturity = MATURITY_STABLE;

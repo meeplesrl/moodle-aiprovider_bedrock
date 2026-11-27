@@ -17,6 +17,7 @@
 namespace aiprovider_bedrock;
 
 use Aws\BedrockRuntime\BedrockRuntimeClient;
+use Aws\Exception\AwsException;
 use core\http_client;
 use core_ai\aiactions\responses\response_base;
 use core_ai\process_base;
@@ -39,17 +40,23 @@ abstract class abstract_processor extends process_base {
      */
     protected function get_bedrock_client(): BedrockRuntimeClient {
         $region = get_config('aiprovider_bedrock', 'region');
+        $usedefaultcredentialchain = get_config('aiprovider_bedrock', 'usedefaultcredentialchain');
         $accesskey = get_config('aiprovider_bedrock', 'accesskeyid');
         $secretkey = get_config('aiprovider_bedrock', 'secretaccesskey');
 
-        return new BedrockRuntimeClient([
+        $config = [
             'version' => 'latest',
             'region' => $region,
-            'credentials' => [
+        ];
+
+        if (!$usedefaultcredentialchain) {
+            $config['credentials'] = [
                 'key' => $accesskey,
                 'secret' => $secretkey,
-            ],
-        ]);
+            ];
+        }
+
+        return new BedrockRuntimeClient($config);
     }
 
     /**
@@ -98,23 +105,108 @@ abstract class abstract_processor extends process_base {
             $model = $this->get_model();
             $params = $this->create_request_params($userid);
 
-            $result = $client->invokeModel([
-                'modelId' => $model,
-                'body' => json_encode($params),
-                'contentType' => 'application/json',
-                'accept' => 'application/json',
-            ]);
+            try {
+                $result = $client->invokeModel([
+                    'modelId' => $model,
+                    'body' => json_encode($params),
+                    'contentType' => 'application/json',
+                    'accept' => 'application/json',
+                ]);
+            } catch (AwsException $e) {
+                // Some models deprecate parameters (e.g. 'temperature') that older models accept.
+                // If that is the cause, strip the offending parameter and retry once.
+                $unsupportedparam = $this->get_unsupported_param_from_error($e, $params);
+                if ($unsupportedparam === null) {
+                    throw $e;
+                }
+
+                unset($params[$unsupportedparam]);
+                $result = $client->invokeModel([
+                    'modelId' => $model,
+                    'body' => json_encode($params),
+                    'contentType' => 'application/json',
+                    'accept' => 'application/json',
+                ]);
+            }
 
             $response = json_decode($result->get('body')->getContents(), true);
             return $this->handle_api_success($response);
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->log_exception($e, 'Model invocation');
             return [
                 'success' => false,
                 'errorcode' => $e->getCode() ?: 500,
-                'errormessage' => $e->getMessage(),
+                'errormessage' => get_string('error:unknownerror', 'aiprovider_bedrock'),
             ];
         }
+    }
+
+    /**
+     * Write safe exception diagnostics to the PHP error log.
+     *
+     * Exception messages and response bodies are deliberately excluded because they may contain
+     * prompts, generated content, or other sensitive data.
+     *
+     * @param \Throwable $exception The exception to log.
+     * @param string $operation The operation that failed.
+     */
+    protected function log_exception(\Throwable $exception, string $operation): void {
+        $diagnostics = [
+            'exception' => get_class($exception),
+            'code' => (string) $exception->getCode(),
+        ];
+
+        if ($exception instanceof AwsException) {
+            $awsdiagnostics = [
+                'aws_error_code' => $exception->getAwsErrorCode(),
+                'aws_request_id' => $exception->getAwsRequestId(),
+                'http_status' => $exception->getStatusCode(),
+            ];
+
+            foreach ($awsdiagnostics as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $diagnostics[$key] = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $value);
+                }
+            }
+        }
+
+        // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
+        error_log('aiprovider_bedrock: ' . $operation . ' failed: ' . json_encode($diagnostics));
+    }
+
+    /**
+     * Check whether an AWS exception is reporting a deprecated/unsupported request parameter.
+     *
+     * @param AwsException $e The exception thrown by the Bedrock client.
+     * @param array $params The request parameters that were sent.
+     * @return string|null The name of the offending parameter if found and present in $params, else null.
+     */
+    private function get_unsupported_param_from_error(AwsException $e, array $params): ?string {
+        $message = $e->getAwsErrorMessage() ?? $e->getMessage();
+        $matched = preg_match('/\x60?([a-zA-Z_]+)\x60? is deprecated for this model/', $message, $matches);
+        if ($matched && array_key_exists($matches[1], $params)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Concatenate the text blocks of a Claude response.
+     *
+     * Claude can return non-text blocks (e.g. thinking) before the text block,
+     * so reading content[0] alone can drop the generated text.
+     *
+     * @param array $response The decoded Claude response.
+     * @return string The generated text, or an empty string if there is none.
+     */
+    protected function extract_claude_text(array $response): string {
+        $text = '';
+        foreach ($response['content'] ?? [] as $block) {
+            if (($block['type'] ?? '') === 'text') {
+                $text .= $block['text'] ?? '';
+            }
+        }
+        return $text;
     }
 
     /**
@@ -124,10 +216,15 @@ abstract class abstract_processor extends process_base {
      * @return array The error response.
      */
     protected function handle_api_error(array $errorinfo): array {
+        $errorcode = $errorinfo['code'] ?? 500;
+        $logcode = is_scalar($errorcode) ? preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $errorcode) : 'unknown';
+        // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
+        error_log('aiprovider_bedrock: API returned an error response (code ' . $logcode . ').');
+
         return [
             'success' => false,
-            'errorcode' => $errorinfo['code'] ?? 500,
-            'errormessage' => $errorinfo['message'] ?? get_string('error:unknownerror', 'aiprovider_bedrock'),
+            'errorcode' => $errorcode,
+            'errormessage' => get_string('error:unknownerror', 'aiprovider_bedrock'),
         ];
     }
 }

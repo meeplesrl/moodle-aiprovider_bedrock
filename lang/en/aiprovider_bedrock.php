@@ -23,7 +23,7 @@
  */
 
 $string['accesskeyid'] = 'AWS Access Key ID';
-$string['accesskeyid_desc'] = 'The AWS Access Key ID used to authenticate with Amazon Bedrock.';
+$string['accesskeyid_desc'] = 'The AWS Access Key ID used to authenticate with Amazon Bedrock. Not required if "Use AWS default credential provider chain" is enabled above.';
 $string['action:generate_image:model'] = 'AI model';
 $string['action:generate_image:model_desc'] = 'The model used to generate images from user prompts.';
 $string['action:generate_text:model'] = 'AI model';
@@ -38,7 +38,7 @@ $string['enableglobalratelimit'] = 'Set site-wide rate limit';
 $string['enableglobalratelimit_desc'] = 'Limit the number of requests that the Amazon Bedrock API provider can receive across the entire site every hour.';
 $string['enableuserratelimit'] = 'Set user rate limit';
 $string['enableuserratelimit_desc'] = 'Limit the number of requests each user can make to the Amazon Bedrock API provider every hour.';
-$string['error:failedprocessimage'] = 'Failed to process image: {$a}';
+$string['error:failedprocessimage'] = 'Failed to process image';
 $string['error:globalratelimitexceeded'] = 'Global rate limit exceeded';
 $string['error:noimagedata'] = 'No image data found in the response';
 $string['error:unknownerror'] = 'Unknown error';
@@ -55,6 +55,8 @@ $string['privacy:metadata:aiprovider_bedrock:responseformat'] = 'When generating
 $string['region'] = 'AWS Region';
 $string['region_desc'] = 'The AWS Region where Amazon Bedrock service is available (e.g., eu-west-1, us-east-1, us-west-2).';
 $string['secretaccesskey'] = 'AWS Secret Access Key';
-$string['secretaccesskey_desc'] = 'The AWS Secret Access Key used to authenticate with Amazon Bedrock.';
+$string['secretaccesskey_desc'] = 'The AWS Secret Access Key used to authenticate with Amazon Bedrock. Not required if "Use AWS default credential provider chain" is enabled above.';
+$string['usedefaultcredentialchain'] = 'Use AWS default credential provider chain';
+$string['usedefaultcredentialchain_desc'] = 'Enable this if Moodle is running in an AWS environment where IAM credentials are automatically available.';
 $string['userratelimit'] = 'Maximum number of requests per user';
 $string['userratelimit_desc'] = 'The number of requests allowed per hour, per user.';

@@ -37,6 +37,9 @@ class provider extends \core_ai\provider {
     /** @var string The AWS region. */
     private string $region;
 
+    /** @var bool Whether to use the AWS SDK default credential provider chain instead of a static key/secret. */
+    private bool $usedefaultcredentialchain;
+
     /** @var bool Is global rate limiting for the API enabled. */
     private bool $enableglobalratelimit;
 
@@ -57,6 +60,7 @@ class provider extends \core_ai\provider {
         $this->accesskeyid = get_config('aiprovider_bedrock', 'accesskeyid');
         $this->secretaccesskey = get_config('aiprovider_bedrock', 'secretaccesskey');
         $this->region = get_config('aiprovider_bedrock', 'region');
+        $this->usedefaultcredentialchain = (bool) get_config('aiprovider_bedrock', 'usedefaultcredentialchain');
 
         // Get global rate limit from config.
         $this->enableglobalratelimit = get_config('aiprovider_bedrock', 'enableglobalratelimit');
@@ -119,11 +123,12 @@ class provider extends \core_ai\provider {
 
         // Check the user rate limit.
         if ($this->enableuserratelimit) {
-            if (!$ratelimiter->check_user_rate_limit(
+            $allowed = $ratelimiter->check_user_rate_limit(
                 component: $component,
                 ratelimit: $this->userratelimit,
-                userid: $action->get_configuration('userid')
-            )) {
+                userid: $action->get_configuration('userid'),
+            );
+            if (!$allowed) {
                 return [
                     'success' => false,
                     'errorcode' => 429,
@@ -134,10 +139,11 @@ class provider extends \core_ai\provider {
 
         // Check the global rate limit.
         if ($this->enableglobalratelimit) {
-            if (!$ratelimiter->check_global_rate_limit(
+            $allowed = $ratelimiter->check_global_rate_limit(
                 component: $component,
-                ratelimit: $this->globalratelimit
-            )) {
+                ratelimit: $this->globalratelimit,
+            );
+            if (!$allowed) {
                 return [
                     'success' => false,
                     'errorcode' => 429,
@@ -204,6 +210,15 @@ class provider extends \core_ai\provider {
      * @return bool Return true if configured.
      */
     public function is_provider_configured(): bool {
-        return !empty($this->accesskeyid) && !empty($this->secretaccesskey) && !empty($this->region);
+        if (empty($this->region)) {
+            return false;
+        }
+
+        // Explicit opt-in to rely on the AWS SDK's default credential provider chain.
+        if ($this->usedefaultcredentialchain) {
+            return true;
+        }
+
+        return !empty($this->accesskeyid) && !empty($this->secretaccesskey);
     }
 }

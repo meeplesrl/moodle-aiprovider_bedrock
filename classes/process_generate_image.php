@@ -166,13 +166,7 @@ class process_generate_image extends abstract_processor {
             return $response['output']['images'][0];
         }
 
-        // Try to debug the response structure.
-        $debugresponse = json_encode($response);
-        if (strlen($debugresponse) > 1000) {
-            $debugresponse = substr($debugresponse, 0, 1000) . '...';
-        }
-
-        throw new \RuntimeException(get_string('error:noimagedata', 'aiprovider_bedrock') . " Received: " . $debugresponse);
+        throw new \RuntimeException(get_string('error:noimagedata', 'aiprovider_bedrock'));
     }
 
     /**
@@ -276,11 +270,12 @@ class process_generate_image extends abstract_processor {
                 'id' => $response['id'] ?? uniqid('bedrock_img_'),
                 'prompttokens' => 0, // Not typically provided by image models.
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->log_exception($e, 'Image processing');
             return [
                 'success' => false,
                 'errorcode' => 500,
-                'errormessage' => get_string('error:failedprocessimage', 'aiprovider_bedrock', $e->getMessage()),
+                'errormessage' => get_string('error:failedprocessimage', 'aiprovider_bedrock'),
             ];
         }
     }

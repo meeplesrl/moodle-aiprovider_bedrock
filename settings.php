@@ -41,6 +41,14 @@ if ($hassiteconfig) {
         '',
     ));
 
+    // Setting to enable use of the AWS SDK default credential provider chain.
+    $settings->add(new admin_setting_configcheckbox(
+        'aiprovider_bedrock/usedefaultcredentialchain',
+        new lang_string('usedefaultcredentialchain', 'aiprovider_bedrock'),
+        new lang_string('usedefaultcredentialchain_desc', 'aiprovider_bedrock'),
+        0,
+    ));
+
     // Setting to store AWS access key ID.
     $settings->add(new admin_setting_configpasswordunmask(
         'aiprovider_bedrock/accesskeyid',
@@ -48,6 +56,7 @@ if ($hassiteconfig) {
         new lang_string('accesskeyid_desc', 'aiprovider_bedrock'),
         '',
     ));
+    $settings->hide_if('aiprovider_bedrock/accesskeyid', 'aiprovider_bedrock/usedefaultcredentialchain', 'eq', 1);
 
     // Setting to store AWS secret access key.
     $settings->add(new admin_setting_configpasswordunmask(
@@ -56,6 +65,7 @@ if ($hassiteconfig) {
         new lang_string('secretaccesskey_desc', 'aiprovider_bedrock'),
         '',
     ));
+    $settings->hide_if('aiprovider_bedrock/secretaccesskey', 'aiprovider_bedrock/usedefaultcredentialchain', 'eq', 1);
 
     // Setting to store AWS region.
     $settings->add(new admin_setting_configtext(
